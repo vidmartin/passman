@@ -277,6 +277,11 @@ pub fn del_profile(profile_name: &str) -> Result<(), PassmanError> {
 pub fn copy_profile(profile_name_from: &str, profile_name_to: &str) -> Result<(), PassmanError> {
     let path_from = profile_path(profile_name_from, PROFILE_FILENAME_EXTENSION);
     let path_to = profile_path(profile_name_to, PROFILE_FILENAME_EXTENSION);
+
+    if path_to.exists() {
+        return Err(PassmanError::ProfileAlreadyExists);
+    }
+
     fs::copy(path_from, path_to).unwrap();
     return Ok(());
 }
