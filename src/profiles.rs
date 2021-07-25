@@ -3,10 +3,9 @@ use crate::passman_error::*;
 use crate::cryptostuff::*;
 use crate::in_and_out::*;
 
-use std::io::{self, BufRead, Read, Write};
+use std::io::{self, BufRead, Write};
 use std::path::{self, Path};
 use std::fs::{self, File};
-use std::rc::Rc;
 
 pub const DEFAULT_PROFILE: &str = "default";
 pub const PROFILES_DIR: &str = "./profiles";
@@ -42,12 +41,12 @@ pub fn authenticate_profile(profile: &str, password: &str) -> Result<(), Passman
     let file = File::open(profile_path(profile, PROFILE_FILENAME_EXTENSION))
         .map_err(|err| match err.kind() {
             io::ErrorKind::NotFound => PassmanError::ProfileNotFound,
-            _ => PassmanError::Unexpected(Rc::from(err))
+            _ => PassmanError::Unexpected(Box::new(err))
         })?;
 
     let mut reader = io::BufReader::new(file);
     let mut pwd_hash_base64_correct = String::new();
-    reader.read_line(&mut pwd_hash_base64_correct).unwrap(); // first line - check hash
+    reader.read_line(&mut pwd_hash_base64_correct).into_passman_result()?; // first line - check hash
 
     return if pwd_hash_base64_attempt == pwd_hash_base64_correct.trim() {
         Ok(())
@@ -217,7 +216,7 @@ pub fn list_profiles() -> Box<dyn Iterator<Item = String>> {
 pub fn list_value_names<'a>(profile: &'a str, profile_password: &'a str) -> Vec<String> {
     let src_file_path = profile_path(profile, PROFILE_FILENAME_EXTENSION);
     let src_file = File::open(&src_file_path).unwrap();
-    let mut src_file_reader = io::BufReader::new(src_file);
+    let src_file_reader = io::BufReader::new(src_file);
 
     src_file_reader.lines().map(Result::unwrap)
         .skip(1) // skip password hash
@@ -239,7 +238,7 @@ pub fn set_profile_password(profile_name: &str, profile_old_password: &str) -> R
     let src_file = File::open(&src_file_path).unwrap();
 
     let mut temp_file_writer = io::BufWriter::new(temp_file);
-    let mut src_file_reader = io::BufReader::new(src_file);
+    let src_file_reader = io::BufReader::new(src_file);
 
     temp_file_writer.write((profile_new_password_hash + "\n").as_bytes()).unwrap();
 

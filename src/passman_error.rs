@@ -1,7 +1,5 @@
 
-use std::rc::Rc;
-
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum PassmanError {
     NoVerb,
     InvalidVerb(String),
@@ -15,7 +13,7 @@ pub enum PassmanError {
     NameNotFound,
     InvalidName,
     FileFormat,
-    Unexpected(Rc<dyn std::error::Error>)
+    Unexpected(Box<dyn std::error::Error>)
 }
 
 pub type PassmanResult<T> = Result<T, PassmanError>;
@@ -35,8 +33,19 @@ impl std::fmt::Display for PassmanError {
             Self::InvalidName => "invalid name".to_owned(),
             Self::FileFormat => "file not in correct format".to_owned(),
             Self::NameNotFound => "name not found".to_owned(),
-            Self::Unexpected(rc) => format!("unexpected error - {}", rc),
+            Self::Unexpected(err) => format!("unexpected error - {}", err),
             _ => "unknown error".to_owned()
         })
+    }
+}
+
+pub trait IntoPassmanResult<T> {
+    fn into_passman_result(self) -> PassmanResult<T>;
+}
+
+impl<TResult, TError> IntoPassmanResult<TResult> for Result<TResult, TError>
+    where TError: std::error::Error + 'static {
+    fn into_passman_result(self) -> PassmanResult<TResult> {
+        self.map_err(|err| PassmanError::Unexpected(Box::new(err)))
     }
 }
