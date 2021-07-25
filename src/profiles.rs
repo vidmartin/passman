@@ -18,8 +18,8 @@ pub fn get_profile_name_single<'a>(args: &'a Vec<&'a str>) -> PassmanResult<&'a 
         .ok_or(PassmanError::MissingArgument)
 }
 
-pub fn get_profile_name_at<'a, const i: usize>(args: &'a Vec<&'a str>) -> PassmanResult<&'a str> {
-    args.get(i).map(|val| *val)
+pub fn get_profile_name_at<'a, const I: usize>(args: &'a Vec<&'a str>) -> PassmanResult<&'a str> {
+    args.get(I).map(|val| *val)
         .ok_or(PassmanError::MissingArgument)
 }
 
