@@ -35,10 +35,6 @@ fn main() {
 fn main_err() -> PassmanResult<()> {
     let args = std::env::args().collect::<Vec<String>>();
 
-    if args.len() > 3 {
-         return Err(PassmanError::TooManyArgs) 
-    } 
-
     let verb = args.get(1).map(|val| val.as_str());
 
     let commands = commands::get_command_dict();
@@ -50,8 +46,12 @@ fn main_err() -> PassmanResult<()> {
                 None => { 
                     Err(PassmanError::InvalidVerb(s.to_owned()))
                 },
-                Some(command_boxed) => {
-                    command_boxed.exec(args.iter().map(String::as_str).collect())
+                Some(command_boxed) => {                    
+                    if args.len() - 2 > command_boxed.max_args() {
+                        Err(PassmanError::TooManyArgs)
+                    } else {
+                        command_boxed.exec(args.iter().map(String::as_str).collect())
+                    }
                 }
             }
         }

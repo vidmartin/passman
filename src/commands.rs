@@ -23,6 +23,10 @@ impl Command for GetCommand {
     fn get_command_name(&self) -> &'static str {
         "get"
     }
+
+    fn max_args(&self) -> usize {
+        1
+    }    
 }
 
 struct SetCommand;
@@ -40,6 +44,10 @@ impl Command for SetCommand {
     fn get_command_name(&self) -> &'static str {
         "set"
     }
+
+    fn max_args(&self) -> usize {
+        1
+    }
 }
 
 struct DelCommand;
@@ -56,6 +64,10 @@ impl Command for DelCommand {
     fn get_command_name(&self) -> &'static str {
         "del"
     }
+
+    fn max_args(&self) -> usize {
+        1
+    }    
 }
 
 struct ListCommand;
@@ -82,6 +94,10 @@ impl Command for ListCommand {
     fn get_command_name(&self) -> &'static str {
         "list"
     }
+
+    fn max_args(&self) -> usize {
+        1
+    }    
 }
 
 struct SetProfilePasswordCommand;
@@ -98,6 +114,10 @@ impl Command for SetProfilePasswordCommand {
     fn get_command_name(&self) -> &'static str {
         "set-profile-password"
     }
+
+    fn max_args(&self) -> usize {
+        1
+    }    
 }
 
 struct AddProfileCommand;
@@ -116,6 +136,10 @@ impl Command for AddProfileCommand {
     fn get_command_name(&self) -> &'static str {
         "add-profile"
     }
+
+    fn max_args(&self) -> usize {
+        1
+    }    
 }
 
 struct DelProfileCommand;
@@ -132,6 +156,31 @@ impl Command for DelProfileCommand {
     fn get_command_name(&self) -> &'static str {
         "del-profile"
     }
+
+    fn max_args(&self) -> usize {
+        1
+    }    
+}
+
+struct CopyProfileCommand;
+impl Command for CopyProfileCommand {
+    fn exec(&self, args: Vec<&str>) -> PassmanResult<()> {
+        let profile_name_from = get_profile_name_at::<2>(&args)?;
+        let profile_name_to = get_profile_name_at::<3>(&args)?;
+        copy_profile(profile_name_from, profile_name_to)?;
+
+        println!("profile '{}' copied to '{}' successsfully", profile_name_from, profile_name_to);
+
+        return Ok(());
+    }
+
+    fn get_command_name(&self) -> &'static str {
+        "copy-profile"
+    }
+
+    fn max_args(&self) -> usize {
+        2
+    }    
 }
 
 pub fn get_command_dict() -> HashMap<&'static str, Box<dyn Command>> {
@@ -142,7 +191,8 @@ pub fn get_command_dict() -> HashMap<&'static str, Box<dyn Command>> {
         Box::new(ListCommand),
         Box::new(SetProfilePasswordCommand),
         Box::new(AddProfileCommand),        
-        Box::new(DelProfileCommand)        
+        Box::new(DelProfileCommand) ,
+        Box::new(CopyProfileCommand)       
     ];
 
     commands.into_iter().map(|command| -> (&'static str, Box<dyn Command>) { 

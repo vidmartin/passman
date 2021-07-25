@@ -18,6 +18,11 @@ pub fn get_profile_name_single<'a>(args: &'a Vec<&'a str>) -> PassmanResult<&'a 
         .ok_or(PassmanError::MissingArgument)
 }
 
+pub fn get_profile_name_at<'a, const i: usize>(args: &'a Vec<&'a str>) -> PassmanResult<&'a str> {
+    args.get(i).map(|val| *val)
+        .ok_or(PassmanError::MissingArgument)
+}
+
 pub fn validate_name(profile: &str) -> Result<(), PassmanError> {
     if profile.chars().all(|ch| ch.is_alphanumeric() || ch == '_' || ch == '-') {
         Ok(())
@@ -266,6 +271,13 @@ pub fn set_profile_password(profile_name: &str, profile_old_password: &str) -> R
 pub fn del_profile(profile_name: &str) -> Result<(), PassmanError> {
     let path = profile_path(profile_name, PROFILE_FILENAME_EXTENSION);
     fs::remove_file(path).unwrap();
+    return Ok(());
+}
+
+pub fn copy_profile(profile_name_from: &str, profile_name_to: &str) -> Result<(), PassmanError> {
+    let path_from = profile_path(profile_name_from, PROFILE_FILENAME_EXTENSION);
+    let path_to = profile_path(profile_name_to, PROFILE_FILENAME_EXTENSION);
+    fs::copy(path_from, path_to).unwrap();
     return Ok(());
 }
 
